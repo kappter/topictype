@@ -3,13 +3,10 @@
   "version": "1.0.0",
   "description": "Vocabulary learning app combining typing and quizzing",
   "scripts": {
-    "build": "tailwindcss build src/input.css -o dist/output.css && cp src/*.js dist/ && cp src/*.html dist/ && cp -r vocab-sets dist/",
+    "build": "tailwindcss build src/input.css -o dist/output.css && cp src/index.html dist/ && cp src/app.js dist/ && cp -r vocab-sets dist/",
     "watch": "tailwindcss build src/input.css -o dist/output.css --watch"
   },
   "dependencies": {
     "tailwindcss": "^3.4.3"
-  },
-  "devDependencies": {
-    "esbuild": "^0.20.2"
   }
 }
