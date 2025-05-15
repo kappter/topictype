@@ -1,22 +1,20 @@
 const { useState, useEffect, useRef } = React;
 
 const TopicTyper = () => {
-    const [mode, setMode] = useState('dashboard'); // dashboard, typing, quiz, results
+    const [mode, setMode] = useState('dashboard');
     const [vocabSets, setVocabSets] = useState({});
     const [currentSet, setCurrentSet] = useState(null);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const [progress, setProgress] = useState(JSON.parse(localStorage.getItem('progress')) || {});
-    const [answers, setAnswers] = useState([]); // For quiz results
+    const [answers, setAnswers] = useState([]);
 
-    // Theme toggle
     useEffect(() => {
         document.body.className = `bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col ${theme}`;
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    // Load vocab sets
     useEffect(() => {
-        const availableSets = ['vocab.csv']; // Managed by you
+        const availableSets = ['vocab.csv'];
         const loadSets = async () => {
             const sets = {};
             for (const set of availableSets) {
@@ -42,7 +40,6 @@ const TopicTyper = () => {
         loadSets();
     }, []);
 
-    // Typing Mode
     const TypingMode = () => {
         const [words, setWords] = useState([]);
         const [currentInput, setCurrentInput] = useState('');
@@ -85,7 +82,8 @@ const TopicTyper = () => {
                 ctx.fillStyle = 'black';
                 ctx.fillText(displayText, word.x, word.y);
                 ctx.fillStyle = 'blue';
-                ctx.fillText(word.definition.substring(0, 50) + (word.definition.length > 50 ? '...' : ''), word.x, word.y - 20);
+                const defText = word.definition.substring(0, 50) + (word.definition.length > 50 ? '...' : '');
+                ctx.fillText(defText, word.x, word.y - 20);
                 if (difficulty === 'medium' && word.y < 50) {
                     ctx.fillStyle = 'gray';
                     ctx.fillText(word.term, word.x, word.y);
@@ -95,7 +93,7 @@ const TopicTyper = () => {
                 let matchedLength = matchCheck.startsWith(termCheck.slice(0, currentInput.length)) ? currentInput.length : 0;
                 for (let i = 0; i < matchedLength; i++) {
                     ctx.fillStyle = 'red';
-                    ctx.fillText(word.term[i], word.x + i * (ctx.measureText('_ ').width), word.y);
+                    ctx.fillText(word.term[i], word.x + i * ctx.measureText('_ ').width, word.y);
                 }
             };
 
@@ -151,15 +149,16 @@ const TopicTyper = () => {
                     setCurrentInput(i => i.slice(0, -1));
                 } else if (/^[a-z0-9\-']$/.test(e.key.toLowerCase())) {
                     setTotalKeystrokes(t => t + 1);
-                    setCurrentInput(i => i + e.key);
-                    const matchCheck = difficulty === 'hard' ? currentInput + e.key : (currentInput + e.key).toLowerCase();
+                    const newInput = currentInput + e.key;
+                    setCurrentInput(newInput);
+                    const matchCheck = difficulty === 'hard' ? newInput : newInput.toLowerCase();
                     const activeWord = words.find(w => (difficulty === 'hard' ? w.term : w.term.toLowerCase()).startsWith(matchCheck));
                     if (activeWord) {
                         setCorrectKeystrokes(c => c + 1);
                         if (matchCheck === (difficulty === 'hard' ? activeWord.term : activeWord.term.toLowerCase())) {
                             if (difficulty === 'coding' && activeWord.codingConvention !== 'none') {
                                 const regex = activeWord.codingConvention === 'camelCase' ? /^[a-z]+([A-Z][a-z]*)*$/ : /^[a-z]+(_[a-z]+)*$/;
-                                if (!regex.test(currentInput + e.key)) return;
+                                if (!regex.test(newInput)) return;
                             }
                             setWords(w => w.filter(w => w !== activeWord));
                             setScore(s => s + activeWord.term.length * 10);
@@ -217,18 +216,18 @@ const TopicTyper = () => {
 
         return (
             <div className="container mx-auto p-4">
-                <div className="flex justify-between mb-4">
+                <div className="flex justify-between mb-4 text-sm">
                     <div>
                         <span>Score: {score}</span> | <span>Wave: {wave}</span> | <span>Time: {Math.floor(waveTime)}s</span> | <span>Misses: {misses}</span> | <span>WPM: {totalTime > 0 ? (wordsTyped / (totalTime / 60)).toFixed(2) : 0}</span>
                     </div>
-                    <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded">
+                    <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded text-sm">
                         <option value="easy">Easy (First Letter)</option>
                         <option value="medium">Medium (Flash Term)</option>
                         <option value="hard">Hard (Case-Sensitive)</option>
                         <option value="coding">Coding Conventions</option>
                     </select>
                 </div>
-                <canvas ref={canvasRef} className="border-2 border-gray-800 dark:border-gray-200 bg-white mx-auto"></canvas>
+                <canvas ref={canvasRef} className="border-2 border-gray-800 dark:border-gray-200 bg-white"></canvas>
                 {gameOver && (
                     <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center">
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg text-center">
@@ -245,7 +244,6 @@ const TopicTyper = () => {
         );
     };
 
-    // Quiz Mode
     const QuizMode = () => {
         const [questions, setQuestions] = useState([]);
         const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -288,7 +286,7 @@ const TopicTyper = () => {
                 }).sort((a, b) => (b.preferred ? 1 : 0) - (a.preferred ? 1 : 0) || Math.random() - 0.5);
                 setQuestions(questions);
                 setQuizStartTime(Date.now());
-                setAnswers([]); // Reset answers
+                setAnswers([]);
             };
             generateQuestions();
         }, [currentSet, questionMode]);
@@ -316,11 +314,11 @@ const TopicTyper = () => {
 
         return (
             <div className="container mx-auto p-4">
-                <div className="flex justify-between mb-4">
+                <div className="flex justify-between mb-4 text-sm">
                     <div>
                         <span>Question {currentQuestionIndex + 1} of {questions.length}</span> | <span>Score: {answers.filter(a => a.isCorrect).length}/{answers.length}</span>
                     </div>
-                    <select value={questionMode} onChange={(e) => setQuestionMode(e.target.value)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded">
+                    <select value={questionMode} onChange={(e) => setQuestionMode(e.target.value)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded text-sm">
                         <option value="termToDefinition">Term to Definition</option>
                         <option value="definitionToTerm">Definition to Term</option>
                         <option value="mixed">Mixed</option>
@@ -328,7 +326,7 @@ const TopicTyper = () => {
                 </div>
                 {questions[currentQuestionIndex] && (
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
-                        <h3 className="text-xl mb-4">
+                        <h3 className="text-lg mb-4">
                             Question {currentQuestionIndex + 1}: {questions[currentQuestionIndex].type === 'termToDefinition'
                                 ? `What is the definition of "${questions[currentQuestionIndex].prompt}"?`
                                 : `What term matches this definition: "${questions[currentQuestionIndex].prompt}"?`}
@@ -348,7 +346,6 @@ const TopicTyper = () => {
         );
     };
 
-    // Results/Certificate
     const Results = () => {
         const score = answers.filter(a => a.isCorrect).length;
         const percentage = answers.length > 0 ? Math.round((score / answers.length) * 100) : 0;
@@ -382,24 +379,23 @@ const TopicTyper = () => {
         );
     };
 
-    // Dashboard
     return (
         <div className="container mx-auto p-4">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-3xl">TopicTyper</h1>
-                <select value={theme} onChange={(e) => setTheme(e.target.value)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded">
+                <h1 className="text-2xl sm:text-3xl">TopicTyper</h1>
+                <select value={theme} onChange={(e) => setTheme(e.target.value)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded text-sm">
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
                 </select>
             </div>
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg mb-4">
-                <h2 className="text-xl mb-4">Select Vocabulary Set</h2>
+            <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg mb-4">
+                <h2 className="text-lg sm:text-xl mb-4">Select Vocabulary Set</h2>
                 <select
                     onChange={(e) => {
                         const setName = e.target.value;
                         setCurrentSet(setName ? { name: setName, data: vocabSets[setName] } : null);
                     }}
-                    className="w-full p-2 bg-gray-200 dark:bg-gray-700 rounded"
+                    className="w-full p-2 bg-gray-200 dark:bg-gray-700 rounded text-sm"
                 >
                     <option value="">Select a set</option>
                     {Object.keys(vocabSets).map(set => (
@@ -411,13 +407,13 @@ const TopicTyper = () => {
                 <div className="flex justify-center gap-4">
                     <button
                         onClick={() => setMode('typing')}
-                        className="px-6 py-3 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm sm:text-base"
                     >
                         Typing Mode
                     </button>
                     <button
                         onClick={() => setMode('quiz')}
-                        className="px-6 py-3 bg-green-500 text-white rounded hover:bg-green-600"
+                        className="px-4 sm:px-6 py-2 sm:py-3 bg-green-500 text-white rounded hover:bg-green-600 text-sm sm:text-base"
                     >
                         Quiz Mode
                     </button>
