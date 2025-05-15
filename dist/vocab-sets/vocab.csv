@@ -1,0 +1,5 @@
+term,definition,strand,preferred,caseSensitive,codingConvention
+CPU,Central Processing Unit, the brain of a computer,1,true,true,none
+RAM,Random Access Memory, temporary storage for data,1,true,false,none
+getUserData,Function to retrieve user data,2,false,true,camelCase
+save_user_data,Function to save user data,2,false,true,snake_case
