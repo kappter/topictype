@@ -1,0 +1,15 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+canvas {
+    max-width: 100%;
+    height: auto;
+}
+@media (max-width: 1024px) {
+    canvas {
+        width: 90vw;
+        height: 300px;
+    }
+}
