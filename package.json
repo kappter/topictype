@@ -4,9 +4,13 @@
   "description": "Vocabulary learning app combining typing and quizzing",
   "scripts": {
     "build": "tailwindcss build src/input.css -o dist/output.css && cp src/index.html dist/ && cp src/app.js dist/ && cp -r vocab-sets dist/",
-    "watch": "tailwindcss build src/input.css -o dist/output.css --watch"
+    "watch": "tailwindcss build src/input.css -o dist/output.css --watch",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "tailwindcss": "^3.4.3"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
   }
 }
